@@ -104,4 +104,3 @@ jobs:
           📦 VS Code Extension Package included below
         artifacts: "feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix"
         token: ${{ secrets.GITHUB_TOKEN }}
-        generateReleaseNotes: true

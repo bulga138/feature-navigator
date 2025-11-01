@@ -16,6 +16,9 @@ on:
         default: 'Release '
         type: string
 
+permissions: 
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -93,14 +96,14 @@ jobs:
         path: feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix
 
     - name: Create GitHub Release
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v1
       with:
-        tag: ${{ steps.set_vars.outputs.TAG_NAME }}
+        tag_name: ${{ steps.set_vars.outputs.TAG_NAME }}
         name: ${{ steps.set_vars.outputs.RELEASE_NAME }}
         body: |
           ## What's Changed
           ${{ steps.changelog.outputs.changes }}
           
           📦 VS Code Extension Package included below
-        artifacts: "feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix"
+        files: "feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix"
         token: ${{ secrets.GITHUB_TOKEN }}

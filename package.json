@@ -11,8 +11,11 @@
   "categories": [
     "Other"
   ],
-    "activationEvents": [
-    "onDefinition:featureNavigator"
+  "activationEvents": [
+    "onLanguage:plaintext",
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:gherkin"
   ],
   "main": "./dist/extension.js",
   "publisher": "bulga",

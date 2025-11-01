@@ -2,7 +2,7 @@
   "name": "feature-navigator",
   "displayName": "Feature Navigator",
   "description": "Provides Go-to-Definition for feature file case numbers found in code.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "icon": "logo.png",
   "engines": {
     "vscode": "^1.80.0"
@@ -57,10 +57,10 @@
       }
     }
   },
-  "repository":{
+  "repository": {
     "url": "https://github.com/bulga138/feature-navigator"
   },
   "bugs": {
     "url": "https://github.com/bulga138/feature-navigator/issues"
-    }
+  }
 }

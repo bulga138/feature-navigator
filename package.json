@@ -1,0 +1,63 @@
+{
+  "name": "feature-navigator",
+  "displayName": "Feature Navigator",
+  "description": "Provides Go-to-Definition for feature file case numbers found in code.",
+  "version": "0.1.0",
+  "icon": "logo.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "license": "ISC",
+  "categories": [
+    "Other"
+  ],
+    "activationEvents": [
+    "onDefinition:featureNavigator"
+  ],
+  "main": "./dist/extension.js",
+  "publisher": "bulga",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "Feature Navigator",
+      "properties": {
+        "featureNavigator.searchPattern": {
+          "type": "string",
+          "default": "**/features/**/${caseNumber}_*.feature",
+          "description": "Glob pattern to find feature files. Use ${caseNumber} as a placeholder. Supports ** and *."
+        },
+        "featureNavigator.tagPattern": {
+          "type": "string",
+          "default": "['\"]?@(C\\d+)['\"]?",
+          "description": "Regex to detect case numbers in code. The first capture group must be the case number (e.g., '@C(\\d+)')."
+        },
+        "featureNavigator.relativeRoot": {
+          "type": "string",
+          "default": "",
+          "description": "Optional relative root folder from which to start the 'searchPattern' search."
+        },
+        "featureNavigator.searchInContent": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, also search the content of all .feature files for the tag (slower)."
+        }
+      }
+    }
+  },
+  "repository":{
+    "url": "https://github.com/bulga138/feature-navigator"
+  },
+  "bugs": {
+    "url": "https://github.com/bulga138/feature-navigator/issues"
+    }
+}

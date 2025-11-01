@@ -87,7 +87,7 @@ jobs:
         fi
 
     - name: Upload VSIX artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}
         path: feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix

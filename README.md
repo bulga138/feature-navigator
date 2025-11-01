@@ -1,5 +1,9 @@
 # 🧭 Feature Navigator
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/bulga138/feature-navigator/release.yml)
+![GitHub Tag](https://img.shields.io/github/v/tag/bulga138/feature-navigator)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/bulga.feature-navigator)
+
 Jump to related files in your project by clicking on feature tags like `#123456`, `case-123456`, or custom patterns — right from your editor!
 
 This extension enhances navigation for developers working with issue-trackers, test cases, or feature tracking systems. It supports navigating both by filename pattern or file content matching.

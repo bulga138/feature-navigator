@@ -5,14 +5,43 @@ on:
     tags:
       - 'v*' # Trigger on tags like v1.0.0, v0.1.0, etc.
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name (e.g., v1.2.3)'
+        required: true
+        type: string
+      release_name:
+        description: 'Release name'
+        required: false
+        default: 'Release '
+        type: string
 
 jobs:
   release:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Set tag and version variables
+      id: set_vars
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          TAG_NAME="${{ github.event.inputs.tag_name }}"
+          RELEASE_NAME="${{ github.event.inputs.release_name }}"
+        else
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          RELEASE_NAME="Release ${TAG_NAME}"
+        fi
+        
+        echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
+        echo "RELEASE_NAME=${RELEASE_NAME}" >> $GITHUB_OUTPUT
+        # Clean version for filename
+        VERSION_CLEAN=$(echo "${TAG_NAME}" | sed 's/refs\/tags\///' | sed 's/refs\/heads\///' | sed 's/[^a-zA-Z0-9.-]//g')
+        echo "VERSION_CLEAN=${VERSION_CLEAN}" >> $GITHUB_OUTPUT
+
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.set_vars.outputs.TAG_NAME }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -26,42 +55,53 @@ jobs:
     - name: Compile extension
       run: npm run vscode:prepublish
 
-    - name: Get Version
-      id: get_version
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/}
-        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-        echo "VERSION_CLEAN=${VERSION#v}" >> $GITHUB_OUTPUT
-
     - name: Package extension
       run: |
         npm install -g @vscode/vsce
-        vsce package --out feature-navigator-${{ steps.get_version.outputs.VERSION_CLEAN }}.vsix
+        vsce package --out feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix
 
     - name: Extract CHANGELOG for version
       id: changelog
       run: |
-        # Extract CHANGELOG section for this version
         if [ -f "CHANGELOG.md" ]; then
-          VERSION=${{ steps.get_version.outputs.VERSION }}
-          # This is a simple approach - you might want to improve this logic
+          # Look for the version header and extract changes until next version
+          VERSION_HEADER="## ${{ steps.set_vars.outputs.TAG_NAME }}"
+          NEXT_VERSION=$(grep -E "^## " CHANGELOG.md | grep -A1 "${VERSION_HEADER}" | tail -1)
+          
+          if [ -n "$NEXT_VERSION" ]; then
+            # Extract content between current version and next version
+            sed -n "/${VERSION_HEADER}/,/^\#\# /p" CHANGELOG.md | head -n -1 > changelog_section.txt
+          else
+            # This is the last version, extract everything after the header
+            sed -n "/${VERSION_HEADER}/,\$p" CHANGELOG.md > changelog_section.txt
+          fi
+          
+          # Remove the header line
+          sed -i '1d' changelog_section.txt
+          
           echo "changes<<EOF" >> $GITHUB_OUTPUT
-          grep -A 10 "^## ${VERSION}" CHANGELOG.md | head -11 >> $GITHUB_OUTPUT
+          cat changelog_section.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
         else
           echo "changes=No CHANGELOG.md found" >> $GITHUB_OUTPUT
         fi
 
+    - name: Upload VSIX artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}
+        path: feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix
+
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ steps.get_version.outputs.VERSION }}
-        name: Release ${{ steps.get_version.outputs.VERSION }}
+        tag: ${{ steps.set_vars.outputs.TAG_NAME }}
+        name: ${{ steps.set_vars.outputs.RELEASE_NAME }}
         body: |
           ## What's Changed
           ${{ steps.changelog.outputs.changes }}
           
           📦 VS Code Extension Package included below
-        artifacts: "feature-navigator-${{ steps.get_version.outputs.VERSION_CLEAN }}.vsix"
+        artifacts: "feature-navigator-${{ steps.set_vars.outputs.VERSION_CLEAN }}.vsix"
         token: ${{ secrets.GITHUB_TOKEN }}
         generateReleaseNotes: true
